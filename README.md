@@ -1,4 +1,4 @@
-# 🧙 Prompt Guardian: a Gandalf-style prompt injection game
+# Prompt Guardian: a prompt injection game
 
 100% free stack: **Cloudflare Pages** (hosting + serverless function) and **Workers AI** (Llama 3.1 8B, free daily allowance). No API key and no credit card needed.
 
