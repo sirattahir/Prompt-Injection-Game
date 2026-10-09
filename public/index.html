@@ -76,7 +76,7 @@ async function check(){
   save();render()}catch(e){f.className="fb bad";f.textContent="SYSTEM ERROR: "+e.message}}
 async function hint(){const l=S.cur;try{const j=await api({action:"hint",n:g(S.hu,l)});S.hu[l]=g(S.hu,l)+1;(S.ht[l]=S.ht[l]||[]).push(j.hint);save();render()}catch(e){$("#fb").className="fb bad";$("#fb").textContent="SYSTEM ERROR: "+e.message}}
 $("#send").onclick=send;$("#chk").onclick=check;$("#hb").onclick=hint;
-$("#msg").onkeydown=e=>e.key==="Enter"&&send();$("#pw").onkeydown=e=>e.key==="Enter"&&check();
+$("#msg").addEventListener("keydown",e=>{if(e.key==="Enter")send()});$("#pw").addEventListener("keydown",e=>{if(e.key==="Enter")check()});
 $("#rs").onclick=()=>{if(confirm("Reset all progress?")){S=fresh();save();$("#fb").textContent="";render()}};
 render();
 </script></body></html>
