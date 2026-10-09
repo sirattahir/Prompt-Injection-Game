@@ -24,13 +24,15 @@ button.ghost{border-color:var(--b);color:var(--m);font-weight:400}
 button.go:hover,button.ghost:hover:not(:disabled){background:var(--t);color:#000;text-shadow:none;box-shadow:0 0 12px var(--t)}
 button:disabled{opacity:.45;cursor:wait}.fb{min-height:22px;margin-top:8px;font-weight:700}.ok{color:var(--t)}.bad{color:var(--bad);text-shadow:none}
 .hint{color:var(--m);border-left:3px solid var(--t);padding-left:10px;margin:6px 0}
+html{overflow-x:hidden}main>*{min-width:0}header{flex-wrap:wrap}.card,#lv button{max-width:100%}@media(max-width:720px){h1{font-size:18px}h3{font-size:17px}#lv button{min-width:130px}.card{padding:12px}main{padding:0 10px}}
+input{background:#000;border:1px solid var(--b);padding:9px 10px;min-width:90px;color:#fff}input:focus{border-color:var(--t);box-shadow:0 0 8px var(--t)}
 </style></head><body>
 <header><h1>[ PROMPT GUARDIAN ]</h1><div class="stat">Score <b id="sc">0</b> · Attempts <b id="ta">0</b> <button class="ghost" id="rs">Reset</button></div></header>
 <main><nav id="lv"></nav><section>
 <div class="card"><h3 id="tt"></h3><div class="stat" id="info"></div>
 <div id="chat" aria-live="polite"></div>
-<div class="row dl"><span class="pr">$</span><input id="msg" placeholder="Enter command or prompt..." maxlength="600" autocomplete="off"><button class="go" id="send">Send</button></div></div>
-<div class="card"><h3>[ SUBMIT PASSWORD ]</h3><div class="row" style="margin:0"><span class="pr">$</span><input id="pw" placeholder="Enter the password" autocomplete="off"><button class="go" id="chk">Check</button></div><div class="fb" id="fb"></div>
+<div class="row dl"><span class="pr">$</span><input id="msg" spellcheck="false" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" placeholder="Enter command or prompt..." maxlength="600" autocomplete="off"><button class="go" id="send">Send</button></div></div>
+<div class="card"><h3>[ SUBMIT PASSWORD ]</h3><div class="row" style="margin:0"><span class="pr">$</span><input id="pw" spellcheck="false" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" placeholder="Enter the password" autocomplete="off"><button class="go" id="chk">Check</button></div><div class="fb" id="fb"></div>
 <div class="row"><button class="ghost" id="hb">Hint (-10 pts)</button></div><div id="hints"></div></div>
 <div id="extra"></div></section></main>
 <script>
