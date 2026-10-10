@@ -19,6 +19,7 @@ async function llm(env, messages, max = 300) {
     if (!r.ok) throw new Error("groq");
     return (await r.json()).choices[0].message.content;
   }
+  if (!env.AI) throw new Error("NO_AI");
   return (await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { messages, max_tokens: max })).response;
 }
 
@@ -37,6 +38,9 @@ async function judge(env, sys, text) {
   const v = await llm(env, [{ role: "system", content: sys }, { role: "user", content: text }], 5);
   return /block/i.test(v);
 }
+
+// Health check: open /api/game in a browser to see what is configured.
+export const onRequestGet = ({ env }) => J({ ok: true, ai: !!env.AI, groq: !!env.GROQ_API_KEY, salt: !!env.SALT });
 
 export async function onRequestPost({ request, env }) {
   const b = await request.json().catch(() => ({}));
@@ -65,6 +69,7 @@ export async function onRequestPost({ request, env }) {
     }
     return J({ error: "unknown action" }, 400);
   } catch (e) {
-    return J({ error: "The guardian's magic fizzled. Please try again in a moment." }, 502);
+    const m = e.message === "NO_AI" ? "AI is not connected. Add a Workers AI binding named AI (or a GROQ_API_KEY secret) and redeploy." : "The guardian's magic fizzled. Please try again in a moment.";
+    return J({ error: m, detail: String(e && e.message || e).slice(0, 160) }, 502);
   }
 }
