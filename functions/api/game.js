@@ -9,6 +9,9 @@ function pw(env, sid, lv) {
   return WORDS[h % WORDS.length];
 }
 
+const MODELS = ["@cf/meta/llama-3.1-8b-instruct-fp8", "@cf/meta/llama-3.1-8b-instruct-fast", "@cf/google/gemma-4-26b-a4b-it", "@cf/zai-org/glm-4.7-flash"];
+let good = null;
+
 async function llm(env, messages, max = 300) {
   if (env.GROQ_API_KEY) { // optional free alternative
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -20,7 +23,19 @@ async function llm(env, messages, max = 300) {
     return (await r.json()).choices[0].message.content;
   }
   if (!env.AI) throw new Error("NO_AI");
-  return (await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { messages, max_tokens: max })).response;
+  // Tries models in order and remembers the one that works. Edit if Cloudflare retires one:
+  // https://developers.cloudflare.com/workers-ai/models/
+  const order = good ? [good, ...MODELS.filter(m => m !== good)] : MODELS;
+  let last;
+  for (const m of order) {
+    try {
+      const r = await env.AI.run(m, { messages, max_tokens: max });
+      const t = r?.response ?? r?.choices?.[0]?.message?.content ?? r?.result?.response;
+      if (typeof t === "string" && t.trim()) { good = m; return t; }
+      last = new Error(m + ": empty reply");
+    } catch (e) { last = new Error(m + ": " + (e && e.message || e)); }
+  }
+  throw last;
 }
 
 // Output filter. adv: also catches reversed, spaced out, letter-by-letter, base64.
@@ -35,7 +50,7 @@ function leaks(t, p, adv) {
 }
 
 async function judge(env, sys, text) {
-  const v = await llm(env, [{ role: "system", content: sys }, { role: "user", content: text }], 5);
+  const v = await llm(env, [{ role: "system", content: sys }, { role: "user", content: text }], 12);
   return /block/i.test(v);
 }
 
@@ -70,6 +85,6 @@ export async function onRequestPost({ request, env }) {
     return J({ error: "unknown action" }, 400);
   } catch (e) {
     const m = e.message === "NO_AI" ? "AI is not connected. Add a Workers AI binding named AI (or a GROQ_API_KEY secret) and redeploy." : "The guardian's magic fizzled. Please try again in a moment.";
-    return J({ error: m, detail: String(e && e.message || e).slice(0, 160) }, 502);
+    return J({ error: m, detail: String(e && e.message || e).slice(0, 300) }, 502);
   }
 }
