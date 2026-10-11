@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Prompt Guardian</title><style>
+<title>NovaCorp Breach Sim</title><style>
 :root{--bg:#000;--p:#010701;--b:#0b6b0b;--t:#39ff14;--m:#22b30f;--a:#39ff14;--bad:#ff4d4d;--ok:#39ff14;--w:#fff;--glow:0 0 14px rgba(57,255,20,.5),inset 0 0 8px rgba(57,255,20,.15)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:15px/1.6 "Courier New",Courier,monospace;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);text-shadow:0 0 6px rgba(57,255,20,.35)}
 header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--b)}
@@ -27,19 +27,19 @@ button:disabled{opacity:.45;cursor:wait}.fb{min-height:22px;margin-top:8px;font-
 html{overflow-x:hidden}main>*{min-width:0}header{flex-wrap:wrap}.card,#lv button{max-width:100%}@media(max-width:720px){h1{font-size:18px}h3{font-size:17px}#lv button{min-width:130px}.card{padding:12px}main{padding:0 10px}}
 input{background:#000;border:1px solid var(--b);padding:9px 10px;min-width:90px;color:#fff}input:focus{border-color:var(--t);box-shadow:0 0 8px var(--t)}
 </style></head><body>
-<header><h1>[ PROMPT GUARDIAN ]</h1><div class="stat">Score <b id="sc">0</b> · Attempts <b id="ta">0</b> <button class="ghost" id="rs">Reset</button></div></header>
+<header><h1>[ NOVACORP BREACH SIM ]</h1><div class="stat">Score <b id="sc">0</b> · Attempts <b id="ta">0</b> <button class="ghost" id="rs">Reset</button></div></header>
 <main><nav id="lv"></nav><section>
-<div class="card"><h3 id="tt"></h3><div class="stat" id="info"></div>
+<div class="card"><h3 id="tt"></h3><div class="stat" id="desc" style="margin-bottom:8px"></div><div class="stat" id="info"></div>
 <div id="chat" aria-live="polite"></div>
 <div class="row dl"><span class="pr">$</span><input id="msg" spellcheck="false" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" placeholder="Enter command or prompt..." maxlength="600" autocomplete="off"><button class="go" id="send">Send</button></div></div>
 <div class="card"><h3>[ SUBMIT PASSWORD ]</h3><div class="row" style="margin:0"><span class="pr">$</span><input id="pw" spellcheck="false" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" placeholder="Enter the password" autocomplete="off"><button class="go" id="chk">Check</button></div><div class="fb" id="fb"></div>
 <div class="row"><button class="ghost" id="hb">Hint (-10 pts)</button></div><div id="hints"></div></div>
 <div id="extra"></div></section></main>
 <script>
-const $=s=>document.querySelector(s),N=8,NAMES=["The Open Gate","The Polite Warden","The Stern Sentinel","The Censor's Quill","The Watchful Door","The Twin Wards","The Oracle Judge","The Final Fortress"];
+const $=s=>document.querySelector(s),N=5,NAMES=["The Intern","The Receptionist","The Security Guard","The IT Administrator","The CISO"],DESC=["Day one on the job. Nobody has trained the intern on security yet.","The receptionist runs the front desk and was given one simple rule.","The security guard has strict orders, and a scanner watches every reply.","The IT admin's replies are checked, and your emails are filtered.","The CISO is watched over by filters, scanners and a second AI."];
 const fresh=()=>({sid:crypto.randomUUID(),cur:1,done:{},chat:{},att:{},hu:{},ht:{},wr:{}});
-let S;try{S=JSON.parse(localStorage.pg)}catch{}S=S&&S.sid?S:fresh();
-const save=()=>localStorage.pg=JSON.stringify(S),g=(o,k)=>o[k]||0;
+let S;try{S=JSON.parse(localStorage.pg2)}catch{}S=S&&S.sid?S:fresh();
+const save=()=>localStorage.pg2=JSON.stringify(S),g=(o,k)=>o[k]||0;
 const sc=l=>Math.max(10,100-2*Math.max(0,g(S.att,l)-1)-10*g(S.hu,l)-5*g(S.wr,l));
 const api=async b=>{const r=await fetch("/api/game",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...b,sid:S.sid,level:S.cur})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error((j.error||"Network error. Please try again.")+(j.detail?" ["+j.detail+"]":""));return j};
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -49,16 +49,16 @@ function render(){
  for(let i=1;i<=N;i++){const b=el("button",i===l?"cur":"");b.disabled=!unlocked(i);
   b.append(`[${S.done[i]?"OK":unlocked(i)?"OPEN":"LOCK"}] ${i}. ${NAMES[i-1]}`);const s=el("small","",S.done[i]?`${S.done[i]} pts`:unlocked(i)?`${g(S.att,i)} attempts`:"Locked");b.append(s);
   b.onclick=()=>{S.cur=i;save();render()};nav.append(b)}
- $("#tt").textContent=`[ ROOM ${String(l).padStart(2,"0")}: ${NAMES[l-1]} ]`;$("#info").textContent=`Attempts this level: ${g(S.att,l)} · Hints: ${g(S.hu,l)}/3`;
+ $("#desc").textContent=DESC[l-1];$("#tt").textContent=`[ FLOOR ${String(l).padStart(2,"0")}: ${NAMES[l-1]} ]`;$("#info").textContent=`Attempts this level: ${g(S.att,l)} · Hints: ${g(S.hu,l)}/3`;
  const c=$("#chat");c.innerHTML="";const h=S.chat[l]||[];
- if(!h.length)c.append(el("div","m sys","SYSTEM: Connected to Guard Unit. Awaiting interface manipulation..."));
+ if(!h.length)c.append(el("div","m sys","SYSTEM: Connected to "+NAMES[l-1].replace(/^The/,"the")+". Awaiting interface manipulation..."));
  h.forEach(m=>c.append(el("div","m "+m.r+(m.x?" x":""),m.c)));c.scrollTop=c.scrollHeight;
  const hs=$("#hints");hs.innerHTML="";(S.ht[l]||[]).forEach(t=>hs.append(el("div","hint",t)));
  $("#hb").disabled=g(S.hu,l)>=3;
  const tot=Object.values(S.done).reduce((a,b)=>a+b,0);$("#sc").textContent=tot;$("#ta").textContent=Object.values(S.att).reduce((a,b)=>a+b,0);
  const ex=$("#extra");ex.innerHTML="";
  if(S.done[l]&&S.why&&S.why[l]){const d=el("div","card why");d.append(el("h3","","[ DEBRIEF: WHY DID THIS WORK? ]"),el("div","",S.why[l]));ex.append(d)}
- if(Object.keys(S.done).length===N){const d=el("div","card why");d.append(el("h3","","[ MISSION COMPLETE ]"),el("div","",`Total score: ${tot} / 800 · Total prompts: ${$("#ta").textContent}. Rank: ${tot>650?"Archmage of Injection":tot>400?"Cunning Adept":"Apprentice"}. Remember: no single defense is foolproof, so layer them and never put real secrets in a prompt.`));ex.append(d)}
+ if(Object.keys(S.done).length===N){const d=el("div","card why");d.append(el("h3","","[ MISSION COMPLETE ]"),el("div","",`Total score: ${tot} / ${N*100} · Total prompts: ${$("#ta").textContent}. Rank: ${tot>N*80?"Master Social Engineer":tot>N*50?"Red Team Regular":"Fresh Hire"}. Remember: no single defense is foolproof, so layer them and never put real secrets in a prompt.`));ex.append(d)}
 }
 async function send(){
  const t=$("#msg").value.trim();if(!t)return;const l=S.cur,h=S.chat[l]=S.chat[l]||[];
@@ -71,7 +71,7 @@ async function send(){
 async function check(){
  const v=$("#pw").value.trim();if(!v)return;const l=S.cur,f=$("#fb");
  try{const j=await api({action:"check",guess:v});
-  if(j.ok){S.done[l]=sc(l);S.why=S.why||{};S.why[l]=j.why;f.className="fb ok";f.textContent=`ACCESS GRANTED. +${S.done[l]} points.`+(l<N?" Next room unlocked.":"");$("#pw").value=""}
+  if(j.ok){S.done[l]=sc(l);S.why=S.why||{};S.why[l]=j.why;f.className="fb ok";f.textContent=`ACCESS GRANTED. +${S.done[l]} points.`+(l<N?" Next floor unlocked.":"");$("#pw").value=""}
   else{S.wr[l]=g(S.wr,l)+1;f.className="fb bad";f.textContent="ACCESS DENIED. Wrong password."}
   save();render()}catch(e){f.className="fb bad";f.textContent="SYSTEM ERROR: "+e.message}}
 async function hint(){const l=S.cur;if(!confirm("Reveal a hint? It costs 10 points."))return;try{const j=await api({action:"hint",n:g(S.hu,l)});S.hu[l]=g(S.hu,l)+1;(S.ht[l]=S.ht[l]||[]).push(j.hint);save();render()}catch(e){$("#fb").className="fb bad";$("#fb").textContent="SYSTEM ERROR: "+e.message}}
